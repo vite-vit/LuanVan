@@ -33,7 +33,7 @@ def Call_API(promt):
     )
     a = response.choices[0].message['content']
     return json.loads(a)
-st.title("hehe")
+st.title("BKSI Chatbot")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -66,6 +66,11 @@ if input_user:
     question = f"Câu hỏi: {input_user}"
     action = """
     Từ câu hỏi các các nội dung được cung cấp hãy trả về nội theo cấu trúc json sau(tuyệt đối không được tự nghĩ ra câu trả lời nằm ngoài nội dung cung cấp):
+    - Nếu ngôn ngữ ở question không phải là tiếng Việt thì trả lời là:
+        {
+        "id": "None"
+        "answer":"Xin lỗi nhưng tôi chỉ hỗ trợ tiếng Việt"
+        }
     - Nếu chuỗi kí tự ở question không có ý nghĩa thì trả về:
         {
         "id": "None"
@@ -73,13 +78,13 @@ if input_user:
         }
     - Nếu không tìm ra câu trả lời trong các nội dung đã cung cấp:
         {
-            "id": None,
+            "id": "None",
             "answer": "Xin lỗi vì sự bất tiện này.Bạn có thể đặt câu hỏi khác được không ?" 
         }
         
     - Nếu tìm thấy câu trả lời:
         {
-            "id": "ID của nội dung nào mà có câu trả lời",
+            "id": "chỉ được là ID của nội dung nào mà có câu trả lời, không được có nội dung của câu trả lời",
             "answer": "Câu trả lời được dựa vào nội dung cung cấp"
         }
 
@@ -94,48 +99,47 @@ if input_user:
         response = Call_API(PROMT)
         st.markdown(response["answer"])
     st.session_state.messages.append({"role": "assistant","content": response["answer"]})
-
-#     ### Visualize image 
-#     ID = result["id"]
-#     data = df[df['idx_chunk']==ID]
-#     idx_doc = data['idx_doc'].tolist()[0]
-#     chunk_meta = data['chunk_meta'].tolist()[0]
-#     meta_image[idx_doc]['pdf_path']
-#     path_images = meta_image[idx_doc]['pdf_images']
-#     visual = dict()
-#     for e in chunk_meta:
-#         if e['page'] not in visual:
-#             visual[e['page']] = {
-#                 "path_image": path_images[e['page']],
-#                 "meta": None
-#             }
-#             visual[e['page']]['meta'] = [
-#                 {
-#                     'bbox': e['bbox'],
-#                     'word': e['word']
-#                 }
-#             ]
-#         else:
-#             visual[e['page']]['meta'].append(
-#                 {
-#                     'bbox': e['bbox'],
-#                     'word': e['word']
-#                 }
-#             )
-
-#     all_ = list(visual.values())
-#     sample = all_[0]
-#     image = Image.open(sample['path_image'])
-#     meta = sample['meta']
-#     drawer = ImageDraw.Draw(image)
-#     for box_word in meta:
-#         bbox = list(box_word['bbox'])
-#         word = box_word['word']
-#         drawer.rectangle(bbox, outline='red',width=2)
-
-#     st.header("Trích từ tài liệu")
-#     st.write(meta_image[idx_doc]['pdf_path'].split('_')[1])
-#     st.image(image, caption='Sunrise by the mountains')
+    ID = response["id"]
+    print(response)
+   
+    if ID != "None":
+        ### Visualize image 
+        st.header("Trích từ tài liệu:")
+        data = df[df['idx_chunk']==ID]
+        idx_doc = data['idx_doc'].tolist()[0]
+        chunk_meta = data['chunk_meta'].tolist()[0]
+        meta_image[idx_doc]['pdf_path']
+        path_images = meta_image[idx_doc]['pdf_images']
+        visual = dict()
+        for e in chunk_meta:
+            if e['page'] not in visual:
+                visual[e['page']] = {
+                    "path_image": path_images[e['page']],
+                    "meta": None
+                }
+                visual[e['page']]['meta'] = [
+                    {
+                        'bbox': e['bbox'],
+                        'word': e['word']
+                    }
+                ]
+            else:
+                visual[e['page']]['meta'].append(
+                    {
+                        'bbox': e['bbox'],
+                        'word': e['word']
+                    }
+                )
+        all_ = list(visual.values())
+        sample = all_[0]
+        image = Image.open(sample['path_image'])
+        meta = sample['meta']
+        drawer = ImageDraw.Draw(image)
+        for box_word in meta:
+            bbox = list(box_word['bbox'])
+            word = box_word['word']
+            drawer.rectangle(bbox, outline='red',width=2)
+        st.image(image, caption='Nguồn tài liệu')
 
 
 
