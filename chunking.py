@@ -7,9 +7,9 @@ from configs import *
 
 all_pdf = glob(f"{FOLDER_PDF}/*")
 cfg = {
-    'y_min':0,
-    'y_max':100000,
-    'chunk_size':128,
+    'y_min':65,
+    'y_max':2340,
+    'chunk_size':256,
     'chunk_stride':64
 }
 docs = []

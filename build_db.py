@@ -14,6 +14,7 @@ documents = df['chunk_content'].tolist()
 index = df['idx_chunk'].astype(str).tolist()
 meta_image = json.loads(open(PATH_METADATA).read())
 #Create Database
+# client.delete_collection(name="bksi")
 try:
     collection = client.get_collection(name="bksi")
     print("nhanh")
