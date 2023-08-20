@@ -1,0 +1,14 @@
+fitz == 0.0.1.dev2
+pymupdf == 1.22.5
+pandas == 2.0.3
+pyarrow == 12.0.1
+numpy == 1.25.1
+pillow == 10.0.0
+tqdm == 4.65.0
+chromadb == 0.4.2
+openai == 0.27.8
+tabula == 1.0.5
+pypdf == 3.12.2
+tabula-py == 2.7.0
+pdfplumber == 0.10.1
+streamlit 
