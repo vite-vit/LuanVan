@@ -1,6 +1,8 @@
 *.png
 meta_docs.json
 chunks.parquet
-.pdf
 launch.json
 *.pyc
+*.bin
+*.sqlite3
+*.pickle

@@ -9,7 +9,7 @@ all_pdf = glob(f"{FOLDER_PDF}/*")
 cfg = {
     'y_min':65,
     'y_max':2340,
-    'chunk_size':256,
+    'chunk_size':128,
     'chunk_stride':64
 }
 docs = []

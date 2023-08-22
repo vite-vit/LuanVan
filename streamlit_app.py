@@ -74,7 +74,12 @@ if input_user:
     - Nếu chuỗi kí tự ở question không có ý nghĩa thì trả về:
         {
         "id": "None"
-        "answer":"Dường như bạn đã nhập một chuỗi ký tự không liên quan hoặc không có ý nghĩa. Nếu bạn có bất kỳ câu hỏi hoặc yêu cầu cụ thể nào, hãy gửi cho tôi để tôi có thể hỗ trợ bạn.
+        "answer":"Dường như bạn đã nhập một chuỗi ký tự không liên quan hoặc không có ý nghĩa. Nếu bạn có bất kỳ câu hỏi hoặc yêu cầu cụ thể nào, hãy gửi cho tôi để tôi có thể hỗ trợ bạn."
+        }
+    - Nếu không chắc chắn hay chuỗi kí tự được nêu ra ở questions không có ý là một câu hỏi thì phải trả về:
+        {
+        "id": "None"
+        "answer":"Dường như bạn đã nhập "input_user" nhưng tôi không chắc chắn bạn đang tìm kiếm thông tin hoặc sự hỗ trợ gì cụ thể. Vui lòng cung cấp thêm ngữ cảnh hoặc làm rõ yêu cầu của bạn, và tôi sẽ cố gắng hỗ trợ bạn tốt nhất có thể."
         }
     - Nếu không tìm ra câu trả lời trong các nội dung đã cung cấp:
         {

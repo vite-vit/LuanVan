@@ -20,13 +20,13 @@ try:
     print("nhanh")
 except:
     collection = client.create_collection(
-    name="bksi",
-    metadata={"hnsw:space": "cosine"} # l2 is the default
-    )
+                name="bksi",
+                metadata={"hnsw:space": "cosine"} # l2 is the default
+                )
     collection.add(
-    documents=documents,
-    ids=index
-    )
+            documents=documents,
+            ids=index
+            )
     print("chậm")
 
 print(" m đã chạy hàm này")
