@@ -10,6 +10,10 @@ from PIL import Image, ImageDraw
 import chromadb
 from build_db import collection,client
 
+col1,_ = st.columns([1,2])
+with col1:
+    logo_image = Image.open(f"{PATH_LOGO}/logo.jpeg")
+    st.image(logo_image)
 
 df = pd.read_parquet(PATH_CHUNKS)
 meta_image = json.loads(open(PATH_METADATA).read())
@@ -35,6 +39,8 @@ def Call_API(promt):
     return json.loads(a)
 st.title("BKSI Chatbot")
 
+with st.chat_message("assistant"):
+    st.write("Chào bạn! Tôi là một chatbot được gọi là BKSI. Tôi được tạo ra để cung cấp thông tin về trường đại học Bách Khoa- Đại Học Quốc Gia Tp.HCM.  Bạn có thể sử dụng tôi để đặt câu hỏi, tìm kiếm thông tin về trường. Hãy đặt câu hỏi hoặc mô tả công việc bạn cần tôi giúp đỡ, và tôi sẽ cố gắng trả lời một cách tốt nhất có thể.")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -108,43 +114,44 @@ if input_user:
     print(response)
    
     if ID != "None":
-        ### Visualize image 
-        st.header("Trích từ tài liệu:")
-        data = df[df['idx_chunk']==ID]
-        idx_doc = data['idx_doc'].tolist()[0]
-        chunk_meta = data['chunk_meta'].tolist()[0]
-        meta_image[idx_doc]['pdf_path']
-        path_images = meta_image[idx_doc]['pdf_images']
-        visual = dict()
-        for e in chunk_meta:
-            if e['page'] not in visual:
-                visual[e['page']] = {
-                    "path_image": path_images[e['page']],
-                    "meta": None
-                }
-                visual[e['page']]['meta'] = [
-                    {
-                        'bbox': e['bbox'],
-                        'word': e['word']
+        with st.expander("Hiển thị nội dung trích dẫn"):
+            ### Visualize image 
+            st.header("Trích từ tài liệu:")
+            data = df[df['idx_chunk']==ID]
+            idx_doc = data['idx_doc'].tolist()[0]
+            chunk_meta = data['chunk_meta'].tolist()[0]
+            meta_image[idx_doc]['pdf_path']
+            path_images = meta_image[idx_doc]['pdf_images']
+            visual = dict()
+            for e in chunk_meta:
+                if e['page'] not in visual:
+                    visual[e['page']] = {
+                        "path_image": path_images[e['page']],
+                        "meta": None
                     }
-                ]
-            else:
-                visual[e['page']]['meta'].append(
-                    {
-                        'bbox': e['bbox'],
-                        'word': e['word']
-                    }
-                )
-        all_ = list(visual.values())
-        sample = all_[0]
-        image = Image.open(sample['path_image'])
-        meta = sample['meta']
-        drawer = ImageDraw.Draw(image)
-        for box_word in meta:
-            bbox = list(box_word['bbox'])
-            word = box_word['word']
-            drawer.rectangle(bbox, outline='red',width=2)
-        st.image(image, caption='Nguồn tài liệu')
+                    visual[e['page']]['meta'] = [
+                        {
+                            'bbox': e['bbox'],
+                            'word': e['word']
+                        }
+                    ]
+                else:
+                    visual[e['page']]['meta'].append(
+                        {
+                            'bbox': e['bbox'],
+                            'word': e['word']
+                        }
+                    )
+            all_ = list(visual.values())
+            sample = all_[0]
+            image = Image.open(sample['path_image'])
+            meta = sample['meta']
+            drawer = ImageDraw.Draw(image)
+            for box_word in meta:
+                bbox = list(box_word['bbox'])
+                word = box_word['word']
+                drawer.rectangle(bbox, outline='red',width=2)
+            st.image(image, caption='Nguồn tài liệu')
 
 
 
