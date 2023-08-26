@@ -1,0 +1,123 @@
+# This workflow will build and push a new container image to Amazon ECR,
+# and then will deploy a new task definition to Amazon ECS, when there is a push to the "main" branch.
+#
+# To use this workflow, you will need to complete the following set-up steps:
+#
+# 1. Create an ECR repository to store your images.
+#    For example: `aws ecr create-repository --repository-name my-ecr-repo --region us-east-2`.
+#    Replace the value of the `ECR_REPOSITORY` environment variable in the workflow below with your repository's name.
+#    Replace the value of the `AWS_REGION` environment variable in the workflow below with your repository's region.
+#
+# 2. Create an ECS task definition, an ECS cluster, and an ECS service.
+#    For example, follow the Getting Started guide on the ECS console:
+#      https://us-east-2.console.aws.amazon.com/ecs/home?region=us-east-2#/firstRun
+#    Replace the value of the `ECS_SERVICE` environment variable in the workflow below with the name you set for the Amazon ECS service.
+#    Replace the value of the `ECS_CLUSTER` environment variable in the workflow below with the name you set for the cluster.
+#
+# 3. Store your ECS task definition as a JSON file in your repository.
+#    The format should follow the output of `aws ecs register-task-definition --generate-cli-skeleton`.
+#    Replace the value of the `ECS_TASK_DEFINITION` environment variable in the workflow below with the path to the JSON file.
+#    Replace the value of the `CONTAINER_NAME` environment variable in the workflow below with the name of the container
+#    in the `containerDefinitions` section of the task definition.
+#
+# 4. Store an IAM user access key in GitHub Actions secrets named `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
+#    See the documentation for each action used below for the recommended IAM policies for this IAM user,
+#    and best practices on handling the access key credentials.
+
+name: Deploy to Amazon ECS
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: us-east-1                   # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: bkgpt     # set this to your Amazon ECR repository name
+  ECS_SERVICE: BkGpt                 # set this to your Amazon ECS service name
+  ECS_CLUSTER: BkGptCluster                 # set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: BkGpt # set this to the path to your Amazon ECS task definition
+                                               # file, e.g. .aws/task-definition.json
+  CONTAINER_NAME: BkGpt           # set this to the name of the container in the
+                                               # containerDefinitions section of your task definition
+  LOAD_BALANCER_STACK: BkGpt
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: latest
+      run: |
+        # Build a docker container and
+        # push it to ECR so that it can
+        # be deployed to ECS.
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Update ECS service
+      id: deploy
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: latest
+      run: |
+        IS_CREATED=1
+        FAILURE=$(aws ecs describe-services --cluster ${ECS_CLUSTER} --services ${ECS_CLUSTER} --query "failures[0]" --output text)
+        ECS_SERVICE_STATUS=$(aws ecs describe-services --cluster ${ECS_CLUSTER} --services ${ECS_SERVICE} --query \'services[0].status\' --output text)
+        if [ "$FAILURE" != "None" ]; then
+            echo "ECS service ${ECS_SERVICE} does not exist"
+            IS_CREATED=0
+        elif [ "$ECS_SERVICE_STATUS" != "ACTIVE" ]; then
+            echo "ECS service ${ECS_SERVICE} is inactive"
+            IS_CREATED=0
+        else
+            echo "ECS service ${ECS_SERVICE} has been already created"
+        fi
+        aws cloudformation deploy --template-file load-balancer.yaml --stack-name $LOAD_BALANCER_STACK}
+        TARGET_GROUP_ARN=$(aws cloudformation describe-stacks --stack-name ${LOAD_BALANCER_STACK} --query 'Stacks[0].Outputs[?OutputKey==`TargetGroupArn`].OutputValue' --output text)
+
+        if [ $IS_CREATED = 0 ];
+          then
+              echo "Creating ${ECS_SERVICE} service..."
+              aws ecs create-service \
+              --cluster ${ECS_CLUSTER} \
+              --service-name ${ECS_SERVICE} \
+              --desired-count 1 \
+              --task-definition ${DEV_TASK_DEFINITION} \
+              --launch-type FARGATE --platform-version LATEST \
+              --network-configuration "awsvpcConfiguration={subnets=[subnet-0344d44130e11b79c,subnet-0de56d1e9c2d97060,subnet-02bbfe46ba29ce20a],securityGroups=[sg-04741693a6494256c],assignPublicIp=ENABLED}" \
+              --load-balancers "targetGroupArn=$TARGET_GROUP_ARN,containerName=${DEV_CONTAINER},containerPort=${CONTAINER_PORT}";
+          else    
+              echo "Updating ${ECS_SERVICE} service..."
+              aws ecs update-service \
+              --service ${ECS_SERVICE} \
+              --cluster ${ECS_CLUSTER} \
+              --force-new-deployment \
+              --load-balancers "targetGroupArn=$TARGET_GROUP_ARN,containerName=${DEV_CONTAINER},containerPort=${CONTAINER_PORT}"
+          fi
+
+          echo "DNS of the load balancer:"
+          aws cloudformation describe-stacks --stack-name ${LOAD_BALANCER_STACK} --query 'Stacks[0].Outputs[?OutputKey==`LoadBalancerDNS`].OutputValue' --output text
