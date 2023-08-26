@@ -87,7 +87,7 @@ Resources:
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 5
-      VpcId: vpc-046ad6577b5ca5cfe
+      VpcId: vpc-0db4806fbb4ca25ed
 
   # Create a rule on the load balancer for routing traffic to the target group
   Listener:
@@ -110,26 +110,26 @@ Resources:
       Name: !Join [ "-", [!Ref AWS::StackName, 'bl'] ]
       Scheme: internet-facing
       SecurityGroups: 
-        - sg-04741693a6494256c
+        - sg-0ba19452764410c68
       Subnets: 
-        - subnet-0344d44130e11b79c
-        - subnet-0de56d1e9c2d97060
-        - subnet-02bbfe46ba29ce20a
+        - subnet-0943873a46fa001fb
+        - subnet-0809d76b64beeeb05
+        - subnet-091ce6094b2e46371
 
-  # LoadBalancerRule:
-  #   Type: AWS::ElasticLoadBalancingV2::ListenerRule
-  #   DependsOn: 
-  #     - TargetGroup
-  #     - Listener
-  #   Properties:
-  #     Actions:
-  #       - TargetGroupArn: !Ref 'TargetGroup'
-  #         Type: 'forward'
-  #     Conditions:
-  #       - Field: path-pattern
-  #         Values: [!Ref 'Path']
-  #     ListenerArn: !Ref 'Listener'
-  #     Priority: !Ref 'Priority'
+  LoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DependsOn: 
+      - TargetGroup
+      - Listener
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'TargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values: [!Ref 'Path']
+      ListenerArn: !Ref 'Listener'
+      Priority: !Ref 'Priority'
 
 Outputs:
   LoadBalancerDNS:

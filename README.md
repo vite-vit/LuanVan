@@ -6,8 +6,7 @@ source .venv/bin/activate
 
 1. Environment:
 - Yêu cầu python 3.10
-- Tải về anaconda:
-    -  ```pip install anaconda ```
+
 - Tải về các thư viện cần thiết
     -  ```pip install -r requirements.txt```
 2. Xử lý data:
