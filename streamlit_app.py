@@ -40,7 +40,7 @@ def Call_API(promt):
 st.title("BKSI Chatbot")
 
 with st.chat_message("assistant"):
-    st.write("Chào bạn! Tôi là một chatbot được gọi là BKSI. Tôi được tạo ra để cung cấp thông tin về trường đại học Bách Khoa- Đại Học Quốc Gia Tp.HCM.  Bạn có thể sử dụng tôi để đặt câu hỏi, tìm kiếm thông tin về trường. Hãy đặt câu hỏi hoặc mô tả công việc bạn cần tôi giúp đỡ, và tôi sẽ cố gắng trả lời một cách tốt nhất có thể.")
+    st.write("Chào bạn! Tôi là BKSI - Chatbot cung cấp các thông tin về trường Đại học Bách Khoa - Đại học Quốc gia Tp.HCM.Tương tác với tôi để đặt câu hỏi hoặc mô tả công việc bạn cần tôi giúp đỡ. Tôi sẵn sàng hỗ trợ bạn một cách tốt nhất có thể.")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
