@@ -28,5 +28,3 @@ except:
             ids=index
             )
     print("chậm")
-
-print(" m đã chạy hàm này")
