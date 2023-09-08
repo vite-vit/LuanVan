@@ -27,4 +27,4 @@ except:
             documents=documents,
             ids=index
             )
-    print("chậm")
+    print("chậm ")
