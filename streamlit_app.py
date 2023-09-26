@@ -27,7 +27,7 @@ def get_content_from_query(question, collection, num_content=5):
     return list(zip(results['ids'][0], results['documents'][0]))
 ### Call API
 def Call_API(promt):
-    openai.api_key = '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'
+    openai.api_key = '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'
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
