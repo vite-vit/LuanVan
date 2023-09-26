@@ -5,6 +5,7 @@ pyarrow == 12.0.1
 numpy == 1.25.1
 pillow == 9.5
 tqdm == 4.65.0
+onnxruntime==1.14.1
 chromadb == 0.4.2
 openai == 0.27.8
 tabula == 1.0.5
